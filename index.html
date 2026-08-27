@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Little Sparrow · Find us</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--bg:#0D0D0D;--card:#1A1A1A;--line:#2A2A2A;--gold:#DA953D;--gold2:#E8B563;--text:#FFFFFF;--muted:#B5B0A6}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:Poppins,system-ui,-apple-system,sans-serif}
+#map{position:fixed;inset:0;background:var(--bg)}
+.leaflet-container{background:var(--bg);font-family:inherit}
+.top{position:fixed;top:0;left:0;right:0;z-index:1000;padding:calc(env(safe-area-inset-top) + 10px) 12px 8px;background:linear-gradient(180deg,rgba(13,13,13,.96) 0%,rgba(13,13,13,.85) 70%,rgba(13,13,13,0) 100%);pointer-events:none}
+.top *{pointer-events:auto}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.brand b{font-weight:600;font-size:15px;letter-spacing:.02em;color:var(--gold)}
+.brand span{font-size:12px;color:var(--muted)}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:999px;padding:6px 12px;font:500 12px/1 Poppins,sans-serif;cursor:pointer}
+.chip.on{background:var(--gold);border-color:var(--gold);color:#000}
+.fab{position:fixed;right:12px;z-index:1000;bottom:calc(env(safe-area-inset-bottom) + 176px);width:46px;height:46px;border-radius:50%;background:var(--gold);color:#000;border:0;box-shadow:0 6px 18px rgba(0,0,0,.5);display:grid;place-items:center;cursor:pointer}
+.fab svg{width:22px;height:22px}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:1000;background:var(--card);border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:8px 0 calc(env(safe-area-inset-bottom) + 8px);max-height:44vh;display:flex;flex-direction:column;transition:max-height .25s ease}
+.sheet.collapsed{max-height:56px}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:2px auto 8px}
+.sheet h2{margin:0 12px 6px;font:600 13px/1.2 Poppins,sans-serif;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center}
+.sheet h2 small{font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)}
+.list{overflow-y:auto;padding:0 8px}
+.row{display:grid;grid-template-columns:52px 1fr auto;gap:10px;align-items:center;padding:8px;border-radius:10px;cursor:pointer}
+.row:active,.row.on{background:#242424}
+.row img,.row .ph{width:52px;height:52px;border-radius:8px;object-fit:cover;background:#000;display:block}
+.row .ph{display:grid;place-items:center;color:var(--gold);font-weight:600}
+.row .n{font-weight:500;font-size:14px;line-height:1.2}
+.row .a{font-size:11.5px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .d{font-size:12px;color:var(--gold);font-variant-numeric:tabular-nums;white-space:nowrap}
+.row .soon{font-size:10px;color:#000;background:var(--gold2);border-radius:999px;padding:2px 7px;margin-left:6px;vertical-align:middle}
+.leaflet-popup-content-wrapper{background:var(--card);color:var(--text);border-radius:12px;border:1px solid var(--line);box-shadow:0 8px 24px rgba(0,0,0,.6)}
+.leaflet-popup-tip{background:var(--card)}
+.leaflet-popup-content{margin:12px 14px;font:13px/1.35 Poppins,sans-serif;min-width:200px}
+.pp b{display:block;font-size:14px;color:var(--gold);margin-bottom:4px}
+.pp .addr{color:var(--muted);font-size:12px}
+.pp .btns{display:flex;gap:6px;margin-top:10px}
+.pp a{flex:1;text-align:center;text-decoration:none;font:500 12px/1 Poppins,sans-serif;padding:9px 8px;border-radius:999px;background:var(--gold);color:#000}
+.pp a.alt{background:transparent;border:1px solid var(--gold);color:var(--gold)}
+.leaflet-popup-close-button{color:var(--muted) !important}
+.pin{width:26px;height:26px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--gold);border:2px solid #000;box-shadow:0 4px 12px rgba(0,0,0,.6)}
+.pin.soon{background:#6B6357}
+.me{width:16px;height:16px;border-radius:50%;background:#4C8DFF;border:3px solid #fff;box-shadow:0 0 0 8px rgba(76,141,255,.25)}
+.leaflet-control-attribution{background:rgba(13,13,13,.7) !important;color:#888 !important;font-size:9px !important}
+.leaflet-control-attribution a{color:#aaa !important}
+.leaflet-control-zoom{display:none}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 236px);z-index:1001;background:#000;color:#fff;border:1px solid var(--line);padding:8px 12px;border-radius:999px;font-size:12px;opacity:0;transition:opacity .2s}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div id="map" role="application" aria-label="Map of Little Sparrow stores"></div>
+<div class="top">
+  <div class="brand"><b>Little Sparrow</b><span>Find us</span></div>
+  <div class="chips" id="chips"></div>
+</div>
+<button class="fab" id="locate" aria-label="Show stores near me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/></svg></button>
+<div class="sheet" id="sheet">
+  <div class="grab" id="grab"></div>
+  <h2 id="title">All stores <small id="count"></small></h2>
+  <div class="list" id="list"></div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const STORES = [{"id":1,"name":"Chadstone (Opposite Myer)","address":"Chadstone Shopping Centre, 1341 Dandenong Rd, Chadstone VIC 3148","phone":"","lat":-37.88722969331938,"lng":145.08581582568902,"state":"VIC","image":"https://s3-ap-southeast-2.amazonaws.com/myplace-prod3/myplace-littlesparrow/settings/galleries/image_1786172073.jpeg","soon":false},{"id":3,"name":"Chadstone (Lower Ground)","address":"Chadstone Shopping Centre, 1341 Dandenong Rd, Malvern East 3148","phone":"","lat":-37.88762622048576,"lng":145.0825323526758,"state":"VIC","image":"https://s3-ap-southeast-2.amazonaws.com/myplace-prod3/myplace-littlesparrow/settings/galleries/image_1786172073.jpeg","soon":false},{"id":4,"name":"Emporium","address":"Melbourne Emporium, Shop 2 -041 level 2/287 Lonsdale St, Melbourne VIC 3000","phone":"","lat":-37.81217512727409,"lng":144.96368475267212,"state":"VIC","image":"https://s3-ap-southeast-2.amazonaws.com/myplace-prod3/myplace-littlesparrow/settings/galleries/image_1786175720.jpeg?1786175720","soon":false},{"id":5,"name":"Watergardens","address":"K37 @ (Atrium) 399 Melton Hwy, Taylors Lakes, Vic 3038","phone":"03 8390 7427","lat":-37.69955104878776,"lng":144.77591529531915,"state":"VIC","image":"https://s3-ap-southeast-2.amazonaws.com/myplace-prod3/myplace-littlesparrow/settings/galleries/image_1786186564.jpeg?1786186564","soon":false},{"id":6,"name":"Chermside","address":"K45 \u2013 395 Hamilton Rd Chermside, Queensland 4032","phone":"","lat":-27.38023169179175,"lng":153.03337222358556,"state":"QLD","image":"https://s3-ap-southeast-2.amazonaws.com/myplace-prod3/myplace-littlesparrow/settings/galleries/image_1786175722.jpeg?1786175722","soon":false},{"id":7,"name":"Sydney Westfield","address":"Level 3, Shop 3048A, 188 Pitt St Sydney 2000","phone":"","lat":-33.870459351086524,"lng":151.20848135276108,"state":"NSW","image":"https://s3-ap-southeast-2.amazonaws.com/myplace-prod3/myplace-littlesparrow/settings/galleries/image_1786175724.jpeg?1786175725","soon":false},{"id":8,"name":"Doncaster","address":"Kiosk KG 21 619 Doncaster Road Doncaster, Vic 3108","phone":"","lat":-37.783827886194686,"lng":145.1266983818323,"state":"VIC","image":"https://s3-ap-southeast-2.amazonaws.com/myplace-prod3/myplace-littlesparrow/settings/galleries/image_1786175726.jpeg?1786175726","soon":false},{"id":9,"name":"Melbourne Central","address":"Level 1, Kiosk 1K1 Cnr La Trobe & Swanson St Melbourne 3000","phone":"","lat":-37.81077588137351,"lng":144.96316325299813,"state":"VIC","image":"https://s3-ap-southeast-2.amazonaws.com/myplace-prod3/myplace-littlesparrow/settings/galleries/image_1786175728.jpeg?1786175728","soon":false},{"id":11,"name":"Sunshine Plaza","address":"Ground Level \u2013 Shop 531 154-164 Horton Parade Maroochydore, Queensland 4558","phone":"","lat":-27.34743894509465,"lng":153.03808673388627,"state":"QLD","image":"https://s3-ap-southeast-2.amazonaws.com/myplace-prod3/myplace-littlesparrow/settings/galleries/image_1786175730.jpeg?1786175730","soon":false},{"id":12,"name":"Fountain Gate","address":"Kiosk k274 25-55 Overland Drive Narree Warren, Vic 3805","phone":"","lat":-38.018174477596105,"lng":145.3049103953393,"state":"VIC","image":"https://s3-ap-southeast-2.amazonaws.com/myplace-prod3/myplace-littlesparrow/settings/galleries/image_1786175732.jpeg?1786175732","soon":false},{"id":13,"name":"Plenty Valley","address":"415 McDonalds Rd Mill Park, 3082","phone":"","lat":-37.65092800373121,"lng":145.06901766648036,"state":"VIC","image":"https://s3-ap-southeast-2.amazonaws.com/myplace-prod3/myplace-littlesparrow/settings/galleries/image_1786175734.jpeg?1786175734","soon":false},{"id":14,"name":"Joondalup","address":"Shop R1, 420 Joondalup Dr, Joondalup WA 6027","phone":"","lat":-31.7443,"lng":115.7654,"state":"WA","image":"https://s3-ap-southeast-2.amazonaws.com/myplace-prod3/myplace-littlesparrow/settings/galleries/image_1786186569.jpeg?1786186570","soon":false},{"id":15,"name":"Werribee","address":"K108 Cnr of Derrimut Rd & Heaths Rd Hopper Crossing, VIC 303","phone":"","lat":-37.87576176605835,"lng":144.68072528183822,"state":"VIC","image":"https://s3-ap-southeast-2.amazonaws.com/myplace-prod3/myplace-littlesparrow/settings/galleries/image_1786186573.jpeg?1786186573","soon":false},{"id":16,"name":"Melbourne CBD","address":"567 Collins Street Melbourne, Vic 3000","phone":"","lat":-37.818708666252974,"lng":144.95583146649076,"state":"VIC","image":"https://s3-ap-southeast-2.amazonaws.com/myplace-prod3/myplace-littlesparrow/settings/galleries/image_1784265657.png?1784265658","soon":false},{"id":18,"name":"Hornsby","address":"Level 2, Shop K203, 236 Pacific Hwy, Hornsby NSW 2077","phone":"","lat":-33.7027,"lng":151.099,"state":"NSW","image":"https://s3-ap-southeast-2.amazonaws.com/myplace-prod3/myplace-littlesparrow/settings/galleries/image_1786175736.jpeg?1786175736","soon":false},{"id":19,"name":"Indooroopilly","address":"Shop K222 322 Moggill Rd Indooroopilly, Queensland 4068","phone":"","lat":-27.499340393359937,"lng":152.97287778126312,"state":"QLD","image":"https://s3-ap-southeast-2.amazonaws.com/myplace-prod3/myplace-littlesparrow/settings/galleries/image_1786175738.jpeg?1786175738","soon":false},{"id":20,"name":"Highpoint","address":"Level 2 - Shop 7212 120 - 200 Rosamond Rd Maribyrnong Vic 3032","phone":"","lat":-37.77267796061669,"lng":-37.77267796061669,"state":"WA","image":"https://s3-ap-southeast-2.amazonaws.com/myplace-prod3/myplace-littlesparrow/settings/galleries/image_1786175740.jpeg?1786175740","soon":false},{"id":21,"name":"Eastland","address":"Level 2, Kiosk 211 175 Maroondah Hwy, Ringwood VIC 3134","phone":"","lat":-37.81377847909146,"lng":145.22827383765446,"state":"VIC","image":"https://s3-ap-southeast-2.amazonaws.com/myplace-prod3/myplace-littlesparrow/settings/galleries/image_1786175742.jpeg?1786175742","soon":false},{"id":22,"name":"Noosa Heads","address":"Shop 3 , 11 Hastings Street Noosa Heads, Queensland, 4567","phone":"","lat":-25.76031798696194,"lng":153.14942053659976,"state":"QLD","image":"https://s3-ap-southeast-2.amazonaws.com/myplace-prod3/myplace-littlesparrow/settings/galleries/image_1786172075.jpeg","soon":false},{"id":23,"name":"Knox","address":"Kiosk KB10A Level 2, 425 Burwood Hwy, Wantirna South, Vic 3152","phone":"03 8390 7427","lat":-37.86865797239596,"lng":145.24116262416587,"state":"VIC","image":"https://s3-ap-southeast-2.amazonaws.com/myplace-prod3/myplace-littlesparrow/settings/galleries/image_1784267258.png?1784267260","soon":false},{"id":24,"name":"Northland","address":"Kiosk K51 2-50 Murray Road Preston, Vic 3072","phone":"","lat":-37.738734222026544,"lng":145.02979089913433,"state":"VIC","image":"https://s3-ap-southeast-2.amazonaws.com/myplace-prod3/myplace-littlesparrow/settings/galleries/image_1786186562.jpeg?1786186562","soon":false},{"id":25,"name":"Geelong","address":"Kiosk 103 95 malop Street Geelong, Vic 3220","phone":"03 4247 2069","lat":-38.146481121621726,"lng":144.36273889534752,"state":"VIC","image":"https://s3-ap-southeast-2.amazonaws.com/myplace-prod3/myplace-littlesparrow/settings/galleries/image_1786186568.jpeg?1786186568","soon":false},{"id":26,"name":"Emporium Kitchen","address":"Shop 2 - 041, Level 2, 287, Melbourne Emporium Lonsdale St, Melbourne 3000","phone":"03 9000 5855","lat":-37.81221750749672,"lng":144.96374912416238,"state":"VIC","image":"https://s3-ap-southeast-2.amazonaws.com/myplace-prod3/myplace-littlesparrow/settings/galleries/image_1786175720.jpeg?1786175720","soon":false},{"id":27,"name":"QVB","address":"Level, Shop L-098, 555 George Street Sydney, NSW, 2000","phone":"02 8043 9910","lat":-33.87094506296841,"lng":-33.87094506296841,"state":"WA","image":"https://s3-ap-southeast-2.amazonaws.com/myplace-prod3/myplace-littlesparrow/settings/galleries/image_1786175744.jpeg?1786175744","soon":false},{"id":28,"name":"Airport West","address":"Shop 93 29 - 35 Louis Street Airport West, Vic 3042","phone":"","lat":-37.71398248965424,"lng":144.88537909532005,"state":"VIC","image":"https://s3-ap-southeast-2.amazonaws.com/myplace-prod3/myplace-littlesparrow/settings/galleries/image_1786186571.jpeg?1786186571","soon":false},{"id":30,"name":"Epping","address":"Kiosk 034 571 - 583 High Street Epping , Vic , 3076","phone":"","lat":-37.653555681954884,"lng":145.01909106648037,"state":"VIC","image":"https://s3-ap-southeast-2.amazonaws.com/myplace-prod3/myplace-littlesparrow/settings/galleries/image_1784270154.png?1784270155","soon":false},{"id":31,"name":"Bayside","address":"Shop 008, 19A & 21 Station Street, Frankston VIC 3199","phone":"03 9800 7498","lat":-38.1432,"lng":145.1236,"state":"VIC","image":"https://s3-ap-southeast-2.amazonaws.com/myplace-prod3/myplace-littlesparrow/settings/galleries/image_1786186566.jpeg?1786186566","soon":false},{"id":32,"name":"Chatswood","address":"Level 2, Unit 2-018A, 345 Victoria Ave, Chatswood NSW 2067","phone":"02 9128 9960","lat":-33.7975,"lng":151.1845,"state":"NSW","image":"https://s3-ap-southeast-2.amazonaws.com/myplace-prod3/myplace-littlesparrow/settings/galleries/image_1786175746.jpeg?1786175746","soon":false},{"id":33,"name":"Craigieburn","address":"Shop C08 K51, 340 Craigieburn Road, Craigieburn VIC 3064","phone":"03 9000 5859","lat":-37.5996,"lng":144.9403,"state":"VIC","image":"https://s3-ap-southeast-2.amazonaws.com/myplace-prod3/myplace-littlesparrow/settings/galleries/image_1786186560.jpeg?1786186560","soon":false},{"id":"o1","name":"Carousel (Opening October)","address":"K155, Westfield Carousel, 1382 Albany Hwy, Cannington WA 6107","phone":"","lat":-32.0176,"lng":115.9336,"state":"WA","image":"","soon":true},{"id":"o2","name":"Galleria (Opening November)","address":"KI073, Centro Galleria, 4 Collier Rd, Morley WA 6062","phone":"","lat":-31.899,"lng":115.85,"state":"WA","image":"","soon":true}];
+const map = L.map('map',{zoomControl:false,attributionControl:true}).setView([-33.5,140],4);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19,subdomains:'abcd',attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'}).addTo(map);
+const icon = soon => L.divIcon({className:'',html:'<div class="pin'+(soon?' soon':'')+'"></div>',iconSize:[26,26],iconAnchor:[13,26],popupAnchor:[0,-24]});
+const km = (a,b,c,d)=>{const R=6371,p=Math.PI/180,x=(c-a)*p,y=(d-b)*p,h=Math.sin(x/2)**2+Math.cos(a*p)*Math.cos(c*p)*Math.sin(y/2)**2;return 2*R*Math.asin(Math.sqrt(h));};
+let here=null, filter='ALL', meMarker=null;
+const markers = {};
+const popup = s => `<div class="pp"><b>${s.name}${s.soon?' <span class="soon">Opening soon</span>':''}</b><div class="addr">${s.address}</div>${s.phone?`<div class="addr">${s.phone}</div>`:''}<div class="btns"><a href="https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}" target="_blank" rel="noopener">Directions</a><a class="alt" href="https://maps.apple.com/?daddr=${s.lat},${s.lng}" target="_blank" rel="noopener">Apple Maps</a></div></div>`;
+STORES.forEach(s=>{ markers[s.id]=L.marker([s.lat,s.lng],{icon:icon(s.soon)}).addTo(map).bindPopup(popup(s)); });
+const order = ['ALL','VIC','NSW','QLD','WA'];
+const labels = {ALL:'All',VIC:'Victoria',NSW:'New South Wales',QLD:'Queensland',WA:'Western Australia'};
+const chips=document.getElementById('chips');
+order.forEach(k=>{const b=document.createElement('button');b.className='chip'+(k===filter?' on':'');b.textContent=labels[k];b.onclick=()=>{filter=k;[...chips.children].forEach(c=>c.classList.toggle('on',c===b));render(true);};chips.appendChild(b);});
+const list=document.getElementById('list'), title=document.getElementById('title'), count=document.getElementById('count');
+function visible(){return STORES.filter(s=>filter==='ALL'||s.state===filter);}
+function render(fit){
+  let rows=visible().map(s=>({...s,dist:here?km(here[0],here[1],s.lat,s.lng):null}));
+  rows.sort((a,b)=>a.soon-b.soon || (a.dist??1e9)-(b.dist??1e9) || a.name.localeCompare(b.name));
+  Object.entries(markers).forEach(([id,m])=>{const on=rows.some(r=>String(r.id)===String(id)); if(on&&!map.hasLayer(m)) m.addTo(map); if(!on&&map.hasLayer(m)) map.removeLayer(m);});
+  list.innerHTML='';
+  rows.forEach(s=>{const el=document.createElement('div');el.className='row';el.innerHTML=`${s.image?`<img src="${s.image}" alt="">`:`<div class="ph">LS</div>`}<div><div class="n">${s.name}${s.soon?'<span class="soon">Opening soon</span>':''}</div><div class="a">${s.address}</div></div><div class="d">${s.dist!=null?(s.dist<10?s.dist.toFixed(1):Math.round(s.dist))+' km':''}</div>`;
+    el.onclick=()=>{[...list.children].forEach(c=>c.classList.remove('on'));el.classList.add('on');map.flyTo([s.lat,s.lng],15,{duration:.6});markers[s.id].openPopup();};list.appendChild(el);});
+  title.firstChild.textContent = here?'Nearest to you ':(filter==='ALL'?'All stores ':labels[filter]+' ');
+  count.textContent=rows.length+' store'+(rows.length===1?'':'s');
+  if(fit){const pts=rows.map(r=>[r.lat,r.lng]); if(here) pts.push(here); if(pts.length) map.fitBounds(pts,{padding:[70,40],maxZoom:13,paddingBottomRight:[20,220]});}
+}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
+document.getElementById('locate').onclick=()=>{
+  if(!navigator.geolocation){toast('Location not available on this device');return;}
+  toast('Finding you…');
+  navigator.geolocation.getCurrentPosition(p=>{here=[p.coords.latitude,p.coords.longitude];
+    if(meMarker) meMarker.setLatLng(here); else meMarker=L.marker(here,{icon:L.divIcon({className:'',html:'<div class="me"></div>',iconSize:[16,16],iconAnchor:[8,8]})}).addTo(map);
+    filter='ALL';[...chips.children].forEach((c,i)=>c.classList.toggle('on',i===0));
+    render(false); const near=visible().map(s=>({...s,d:km(here[0],here[1],s.lat,s.lng)})).sort((a,b)=>a.d-b.d).slice(0,3);
+    map.fitBounds([here,...near.map(s=>[s.lat,s.lng])],{padding:[70,40],maxZoom:14,paddingBottomRight:[20,220]});
+  },e=>{toast(e.code===1?'Allow location to see stores near you':'Could not get your location');},{enableHighAccuracy:true,timeout:9000,maximumAge:60000});
+};
+const sheet=document.getElementById('sheet');document.getElementById('grab').onclick=()=>sheet.classList.toggle('collapsed');document.getElementById('title').onclick=()=>sheet.classList.toggle('collapsed');
+render(true);
+</script>
+</body>
+</html>
