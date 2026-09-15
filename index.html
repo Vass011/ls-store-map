@@ -31,18 +31,19 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-famil
 .grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:2px auto 8px}
 .sheet h2{margin:0 12px 6px;font:600 13px/1.2 Poppins,sans-serif;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center}
 .sheet h2 small{font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)}
-.list{overflow-y:auto;padding:0 8px}
-.row{display:grid;grid-template-columns:52px 1fr auto;gap:10px;align-items:center;padding:8px;border-radius:10px;cursor:pointer}
+.list{min-height:0;min-width:0;overflow-y:auto;overflow-x:hidden;padding:0 8px}
+.row{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px;border-radius:10px;cursor:pointer}
+.row>*{min-width:0}
 .row:active,.row.on{background:#242424}
 .row img,.row .ph{width:52px;height:52px;border-radius:8px;object-fit:cover;background:#000;display:block}
 .row .ph{display:grid;place-items:center;color:var(--gold);font-weight:600}
-.row .n{font-weight:500;font-size:14px;line-height:1.2}
-.row .a{font-size:11.5px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .n{font-weight:500;font-size:14px;line-height:1.2;overflow-wrap:anywhere}
+.row .a{font-size:11.5px;line-height:1.35;color:var(--muted);margin-top:2px;white-space:normal;overflow-wrap:anywhere}
 .row .d{font-size:12px;color:var(--gold);font-variant-numeric:tabular-nums;white-space:nowrap}
-.row .soon{font-size:10px;color:#000;background:var(--gold2);border-radius:999px;padding:2px 7px;margin-left:6px;vertical-align:middle}
+.row .soon{display:inline-block;font-size:10px;color:#000;background:var(--gold2);border-radius:999px;padding:2px 7px;margin-left:6px;vertical-align:middle;white-space:nowrap}
 .leaflet-popup-content-wrapper{background:var(--card);color:var(--text);border-radius:12px;border:1px solid var(--line);box-shadow:0 8px 24px rgba(0,0,0,.6)}
 .leaflet-popup-tip{background:var(--card)}
-.leaflet-popup-content{margin:12px 14px;font:13px/1.35 Poppins,sans-serif;min-width:200px}
+.leaflet-popup-content{margin:12px 14px;font:13px/1.35 Poppins,sans-serif;min-width:0;max-width:calc(100vw - 60px);overflow-wrap:anywhere}
 .pp b{display:block;font-size:14px;color:var(--gold);margin-bottom:4px}
 .pp .addr{color:var(--muted);font-size:12px}
 .pp .btns{display:flex;gap:6px;margin-top:10px}
